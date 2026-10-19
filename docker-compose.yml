@@ -1,0 +1,20 @@
+# Runs on the VM with host networking so DNS (53/udp+tcp) and the gateway (80, 443)
+# see real client IPs, which is how per-agent snapshots and logs work.
+services:
+  gateway:
+    build: ./gateway
+    image: frozen-web:latest
+    network_mode: host
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - /var/lib/frozen-web:/data
+    command: sh /app/start-gateway.sh
+
+  dns:
+    image: frozen-web:latest
+    depends_on: [gateway]
+    network_mode: host
+    restart: unless-stopped
+    env_file: .env
+    command: python -m frozen.dns_server
